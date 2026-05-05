@@ -70,10 +70,11 @@ def sphere_volume_parallel1(n, d, np=10):
 
 #Ex4: parallel code - parallelize actual computations by splitting data
 def sphere_volume_parallel2(n,d,np=10):
-    #n is the number of points
-    # d is the number of dimensions of the sphere
-    #np is the number of processes
-    return 
+    with future.ProcessPoolExecutor(max_workers = 10) as executor:
+        results = list(executor.map(sphere_volume, [n]*np, [d]*np))
+    
+    # Return the average value
+    return sum(results) / len(results)
     
 def main():
     #Ex1
@@ -113,7 +114,11 @@ def main():
     sphere_volume(n,d)
     stop = pc()
     print(f"Ex4: Sequential time of {d} and {n}: {stop-start}")
-    print("What is parallel time?")
+    
+    start = pc()
+    sphere_volume_parallel2(n,d,np=10)
+    stop = pc()
+    print(f"Ex3: Parallel time of {d} and {n}: {stop-start}")
 
     
     
