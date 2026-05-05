@@ -81,20 +81,23 @@ def sphere_volume_parallel2(n,d,np=10):
     # Return the average value
     return sum(results) / len(results)
     
+#The paralell version (2.4s) wast faster by about a second compared to the sequantial version(3.3s), which is an improvement. On the linux machine, the sequantial version took 9.4s, compared to the parallel time of 1.6s, which is a lrge improvement.
+
 def main():
     #Ex1
     dots = [1000, 10000, 100000]
     for n in dots:
         approximate_pi(n)
+
     #Ex2
     n = 100000
     d = 2
-    sphere_volume(n,d)
+    print(f"Approximate volume of {d} dimentional sphere = {sphere_volume(n,d)}")
     print(f"Actual volume of {d} dimentional sphere = {hypersphere_exact(n,d)}")
 
     n = 100000
     d = 11
-    sphere_volume(n,d)
+    print(f"Approximate volume of {d} dimentional sphere = {sphere_volume(n,d)}")
     print(f"Actual volume of {d} dimentional sphere = {hypersphere_exact(n,d)}")
 
     #Ex3
