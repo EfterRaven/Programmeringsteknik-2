@@ -20,16 +20,15 @@ class Test(unittest.TestCase):
 
         # test if the sphere volume is within the interval [1.2, 2.6]
         d = 11
-        app_vol = sphere_volume(n, 11)
+        app_vol = sphere_volume(n, d)
         self.assertLess(1.2, app_vol)
         self.assertLess(app_vol, 2.6)
         #act_vol = hypersphere_exact(n, d)
         #self.assertAlmostEqual(act_vol, 1.8841038793898994)
 
-        file_path = "MA3.py"  # Replace with your actual file path
+        file_path = "MA3_VT26/MA3.py"  # Replace with your actual file path
         found_higher_order = check_higher_order_functions(file_path)
         self.assertEqual(found_higher_order, True)
-
 
 if __name__ == "__main__":
     unittest.main()
