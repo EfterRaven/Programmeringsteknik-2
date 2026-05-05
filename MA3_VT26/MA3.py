@@ -68,10 +68,15 @@ def sphere_volume_parallel1(n, d, np=10):
     # Return the average value
     return sum(results) / len(results)
 
+# This Exercise 3 failed in the test on my own laptop, but passed the test on the Linux Machine.
+# The parallel version (2.4s) was faster by about a second compared to the sequantial version(3.2s), which is an improvement. On the linux machine, the sequential version took a whole 8.7s seconds, while the parallel version took 1.8 seconds, a significant improvement.
+
 #Ex4: parallel code - parallelize actual computations by splitting data
 def sphere_volume_parallel2(n,d,np=10):
+    n_per_process = n // np
+
     with future.ProcessPoolExecutor(max_workers = 10) as executor:
-        results = list(executor.map(sphere_volume, [n]*np, [d]*np))
+        results = list(executor.map(sphere_volume, [n_per_process]*np, [d]*np))
     
     # Return the average value
     return sum(results) / len(results)
@@ -118,7 +123,7 @@ def main():
     start = pc()
     sphere_volume_parallel2(n,d,np=10)
     stop = pc()
-    print(f"Ex3: Parallel time of {d} and {n}: {stop-start}")
+    print(f"Ex4: Parallel time of {d} and {n}: {stop-start}")
 
     
     
