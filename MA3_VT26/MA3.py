@@ -2,8 +2,8 @@
 
 Student: Hugo Lovmar
 Mail: hlovmar@gmail.com
-Reviewed by:
-Date reviewed:
+Reviewed by: Isac Persson
+Date reviewed: 2025-05-13
 
 """
 import random
@@ -56,7 +56,7 @@ def sphere_volume(n, d): #Ex2, approximation
     # (points inside/total points) * volume of the "cube"
     return (len(inside_points) / n) * (2**d)
 
-def hypersphere_exact(n,d): #Ex2, real value
+def hypersphere_exact(d): #Ex2, real value
     #n is the number of points
     # d is the number of dimensions of the sphere 
     return (m.pi**(d/2)) / m.gamma(d/2 + 1)
@@ -93,12 +93,12 @@ def main():
     #Ex2
     n = 100000
     d = 2
-    print(f"Approximate volume of {d} dimentional sphere = {sphere_volume(n,d)}")
+    print(f"Approx. volume of {d} dimentional sphere = {sphere_volume(n,d)}")
     print(f"Actual volume of {d} dimentional sphere = {hypersphere_exact(n,d)}")
 
     n = 100000
     d = 11
-    print(f"Approximate volume of {d} dimentional sphere = {sphere_volume(n,d)}")
+    print(f"Approx. volume of {d} dimentional sphere = {sphere_volume(n,d)}")
     print(f"Actual volume of {d} dimentional sphere = {hypersphere_exact(n,d)}")
 
     #Ex3

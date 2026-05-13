@@ -7,10 +7,10 @@
 
 # Remove the comment character to try the following
 
-#1 - (5-2*2)/(1+1) - (-2 + 1)      # 
-#sin(3.14159265)                   # Standard functions
-#cos(PI)                           # Predefined constant
-#log(exp(4*0.5 - 1))               # Standard functions
+1 - (5-2*2)/(1+1) - (-2 + 1)      # 
+sin(3.14159265)                   # Standard functions
+cos(PI)                           # Predefined constant
+log(exp(4*0.5 - 1))               # Standard functions
 #1 + 2 + 3 = x                     # Variables. Assignment to the RIGHT!
 #x/2 + x
 #(1=x) + sin(2=y)                  # Assignments

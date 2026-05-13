@@ -204,6 +204,7 @@ def main():
     try:
         with open(init_file, 'r') as file:
             lines_from_file = file.readlines()
+            
     except FileNotFoundError:
         pass
 
