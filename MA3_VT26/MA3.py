@@ -34,7 +34,7 @@ def approximate_pi(n): # Ex1
     pi_approx = 4 * nc / n
     print(f"Approximation of pi: {pi_approx} if n={n}")
 
-    # Produce a scatter plot with red (inside) dots and blue (outside) dots
+    # Produce a plot with red inside dots and blue outside dots
     plt.figure(figsize=(5, 5))
     plt.scatter(x_in, y_in, color='red', s=1, label='Inside')
     plt.scatter(x_out, y_out, color='blue', s=1, label='Outside')
@@ -53,6 +53,7 @@ def sphere_volume(n, d): #Ex2, approximation
     
     inside_points = list(filter(lambda p: sum(map(lambda x: x**2, p)) <= 1, points))
     
+    # (points inside/total points) * volume of the "cube"
     return (len(inside_points) / n) * (2**d)
 
 def hypersphere_exact(n,d): #Ex2, real value
@@ -61,7 +62,7 @@ def hypersphere_exact(n,d): #Ex2, real value
     return (m.pi**(d/2)) / m.gamma(d/2 + 1)
 
 #Ex3: parallel code - parallelize for loop
-def sphere_volume_parallel1(n, d, np=10):
+def sphere_volume_parallel1(n, d, np = 10):
     with future.ProcessPoolExecutor(max_workers = np) as executor:
         results = list(executor.map(sphere_volume, [n]*np, [d]*np))
     
@@ -72,7 +73,7 @@ def sphere_volume_parallel1(n, d, np=10):
 # The parallel version (2.4s) was faster by about a second compared to the sequantial version(3.2s), which is an improvement. On the linux machine, the sequential version took a whole 8.7s seconds, while the parallel version took 1.8 seconds, a significant improvement.
 
 #Ex4: parallel code - parallelize actual computations by splitting data
-def sphere_volume_parallel2(n,d,np=10):
+def sphere_volume_parallel2(n, d, np = 10):
     n_per_process = n // np
 
     with future.ProcessPoolExecutor(max_workers = 10) as executor:
