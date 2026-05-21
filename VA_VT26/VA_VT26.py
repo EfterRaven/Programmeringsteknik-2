@@ -4,123 +4,69 @@ import numpy as np
 from multiprocessing import Pool
 
 
-# Task 1
-# Complexity: O(4^L)  — iterates all 2^L × 2^L point combinations.
+# Task 1: Complexity: O(4^L). Iterates all 2^L × 2^L point combinations.
 
 def proportion(L):
-    """"
-    Returns the proportion of integer points (x, y) with 0 ≤ x,y < 2^L
-    that lie inside (or on) the circle of radius 2^L − 1.
-
-    With a fair coin (q = 0.5) every point is equally likely, so the
-    proportion equals (# points in circle) / (total # points).
-    As L → ∞ this converges to π/4.
-    """
     r_sq = (2**L - 1) ** 2
     n = 2**L
     count = sum(1 for x in range(n) for y in range(n) if x * x + y * y <= r_sq)
+
     return count / n**2
 
 
 
-# Task 2
-# Complexity: O(4^L)
+# Task 2: Complexity: O(4^L)
 
-def proportion_with_prob(L, q = 0.5)
-    """
-    Theoretical proportion when the probability of drawing symbol 1 is q
-    (and of drawing 0 is 1−q).
-
-    The probability of an L-bit integer n is:
-        P(n) = q^(popcount(n)) × (1−q)^(L − popcount(n))
-
-    Returns Σ P(x)·P(y) over all (x,y) with x²+y² ≤ (2^L−1)².
-    No random generation is used — this is the pure theoretical value.
-    """
+def proportion_with_prob(L, q = 0.5):
     r_sq = (2**L - 1) ** 2
     n = 2**L
 
-    def prob(num: int) -> float:
+    def prob(num):
         ones = bin(num).count('1')
         return q**ones * (1 - q) ** (L - ones)
 
-    return sum(
-        prob(x) * prob(y)
-        for x in range(n)
-        for y in range(n)
-        if x * x + y * y <= r_sq
-    )
+    return sum(prob(x) * prob(y) for x in range(n) for y in range(n) if x * x + y * y <= r_sq)
 
 
-# =============================================================================
-# Task 3: Complexity analysis (see comments below and printed at runtime)
-#
-#  proportion / proportion_with_prob : O(4^L)
-#    — double loop over 2^L × 2^L pairs.
-#    — For L = 24: 4^24 ≈ 2.8 × 10^14 iterations → thousands of years.
-#
-#  proportion_upgrade : O(2^L)
-#    — precompute P(i) for all i in O(2^L), build prefix sums in O(2^L),
-#      then for each x do one isqrt + one O(1) prefix-sum lookup → O(2^L).
-#    — For L = 24: 2^24 ≈ 1.7 × 10^7 → runs in a few seconds.
-# =============================================================================
+# Task 3: Complexity analysis
+# proportion / proportion_with_prob : O(2^2L)
+# double loop over 2^L (for x) times 2^L (for y).
+# For L = 24 and q=0.5: it would run for 243 days on my pc.
 
 
-# =============================================================================
-# Task 4 & 5: proportion_upgrade(L, q) — O(2^L) with memoization
-# =============================================================================
-_memo: dict = {}   # cache: (L, q) → (probs, prefix_sums)
+# Task 4 & 5: proportion_upgrade(L, q): O(2^L) with memorization
+memo = {} 
 
 
-def proportion_upgrade(L: int, q: float) -> float:
-    """
-    Improved O(2^L) implementation using prefix sums.
-
-    Key insight:
-        proportion = Σ_x P(x) · Σ_{y ≤ √(r²−x²)} P(y)
-
-    The inner sum is a prefix-sum lookup once we precompute and store
-    prefix[k] = Σ_{i=0}^{k−1} P(i).
-
-    Memoization (Task 5): the probability array and prefix sums depend
-    only on L and q, so they are cached on the first call and reused
-    for all subsequent calls with the same (L, q) pair.
-    """
+def proportion_upgrade(L, q):
     r_sq = (2**L - 1) ** 2
     n = 2**L
 
     key = (L, q)
-    if key not in _memo:
-        # -- O(2^L): compute P(i) for every i in [0, 2^L) ------------------
-        probs = [
-            q ** bin(i).count('1') * (1 - q) ** (L - bin(i).count('1'))
-            for i in range(n)
-        ]
-        # -- O(2^L): prefix sums so prefix[k] = sum(probs[0:k]) -------------
+    if key not in memo:
+        probs = [q ** bin(i).count('1') * (1 - q) ** (L - bin(i).count('1'))for i in range(n)]
+
         prefix = [0.0] * (n + 1)
         for i in range(n):
             prefix[i + 1] = prefix[i] + probs[i]
-        _memo[key] = (probs, prefix)
+        memo[key] = (probs, prefix)
 
-    probs, prefix = _memo[key]
+    probs, prefix = memo[key]
 
-    # -- O(2^L): one sweep over x; each iteration is O(1) -------------------
     result = 0.0
     for x in range(n):
         x_sq = x * x
-        if x_sq > r_sq:          # x already outside circle; x only grows
+        if x_sq > r_sq:
             break
         max_y = math.isqrt(r_sq - x_sq)          # largest valid y
         result += probs[x] * prefix[min(max_y + 1, n)]
 
     return result
 
-
-# =============================================================================
 # Task 6: Experimental verification
-# Task 7: list comprehension + higher-order function (map, filter)
-# =============================================================================
-def experiment(args: tuple) -> float:
+# Task 7: list comprehension + higher-order function
+
+def experiment(args):
     """
     Generate a random binary string (length N, P(1)=q), split into
     non-overlapping sequences of length L, pair consecutive sequences
@@ -184,44 +130,20 @@ def compute_mean_std(
 # =============================================================================
 if __name__ == "__main__":
 
-    SEP = "=" * 62
-
-    # ── Task 1 ──────────────────────────────────────────────────────────────
-    print(SEP)
-    print("Task 1 — proportion(L=12)")
-    t0 = time.perf_counter()
+    # Task 1
+    print("Task 1: proportion(L=12)")
     p1 = proportion(12)
-    t1 = time.perf_counter()
-    print(f"  proportion(12)       = {p1:.10f}")
-    print(f"  proportion(12) × 4   = {p1 * 4:.10f}  (π = {math.pi:.10f})")
-    print(f"  Time: {t1 - t0:.2f} s")
+    print(f"  proportion(12) = {p1:.10f}")
+    print(f"  proportion(12) * 4 = {p1 * 4:.10f})
 
-    # ── Task 2 ──────────────────────────────────────────────────────────────
-    print(SEP)
-    print("Task 2 — proportion_with_prob(L, q)")
-    # L=12 + naive is very slow; demonstrate with a smaller L for correctness,
-    # then note that Task 4 handles larger L efficiently.
-    for L_demo, q_demo in [(4, 0.5), (4, 0.7), (6, 0.5)]:
-        p2 = proportion_with_prob(L_demo, q=q_demo)
-        print(f"  proportion_with_prob(L={L_demo}, q={q_demo}) = {p2:.8f}  (×4 = {p2*4:.8f})")
+    # Task 2
+    print("Task 2: proportion_with_prob(L, q)")
+    
+    print(f"  proportion_with_prob(L=12, q=0.5) = {proportion_with_prob(12, 0.5):.10f}")
 
-    # ── Task 3 ──────────────────────────────────────────────────────────────
-    print(SEP)
-    print("Task 3 — Complexity analysis")
-    print("  proportion / proportion_with_prob : O(4^L)")
-    print("    Iterates all 2^L × 2^L point combinations.")
-    print("    L=12 → 4^12 ≈ 1.7×10^7 ops  (manageable)")
-    print("    L=24 → 4^24 ≈ 2.8×10^14 ops (thousands of years)")
-    print()
-    print("  proportion_upgrade                : O(2^L)")
-    print("    Precompute P(i) → O(2^L)")
-    print("    Build prefix sums → O(2^L)")
-    print("    Single sweep over x with O(1) lookup → O(2^L)")
-    print("    L=24 → 2^24 ≈ 1.7×10^7 ops  (seconds)")
 
-    # ── Task 4 ──────────────────────────────────────────────────────────────
-    print(SEP)
-    print("Task 4 — proportion_upgrade vs proportion_with_prob at L=14")
+    # Task 5
+    print("Task 4: proportion_upgrade vs proportion_with_prob at L=14")
     L_bench = 14
 
     t0 = time.perf_counter()
@@ -236,9 +158,8 @@ if __name__ == "__main__":
     print(f"  proportion_upgrade   (O(2^L)) = {p_fast:.10f}  [{t_fast:.4f} s]")
     print(f"  Speedup: ×{t_slow / t_fast:.0f}")
 
-    # ── Task 5 ──────────────────────────────────────────────────────────────
-    print(SEP)
-    print("Task 5 — proportion_upgrade(L=14, q=...) with memoization")
+    # Task 5
+    print("Task 5: proportion_upgrade(L=14, q=...) with memoization")
     L = 14
     q_values = [0.4, 0.5, 0.6, 0.7]
 
@@ -256,19 +177,17 @@ if __name__ == "__main__":
         elapsed = time.perf_counter() - t0
         print(f"    q={q_val}: proportion={p:.10f}  ×4={p * 4:.10f}  [{elapsed:.6f} s]")
 
-    # ── Task 6 & 7 ──────────────────────────────────────────────────────────
-    print(SEP)
-    print("Task 6 — Experimental test  (q=0.7, L=12, N=10^6)")
-    print("Task 7 — list comprehension & map (higher-order) used inside experiment()")
+    # Task 6 and 7
+    print("Task 6: Experimental test  (q=0.7, L=12, N=10^6)")
+    print("Task 7: list comprehension & map (higher-order) used inside experiment()")
     p_exp = experiment((0.7, 12, 10**6, 0))
     p_theory = proportion_upgrade(12, 0.7)
     print(f"  Experimental proportion = {p_exp:.8f}")
     print(f"  Theoretical  proportion = {p_theory:.8f}")
     print(f"  Difference              = {abs(p_exp - p_theory):.2e}")
 
-    # ── Task 8 ──────────────────────────────────────────────────────────────
-    print(SEP)
-    print("Task 8 — Mean & std via multiprocessing  (50 trials, q=0.7, L=12)")
+    # Task 8
+    print("Task 8: Mean & std via multiprocessing  (50 trials, q=0.7, L=12)")
     t0 = time.perf_counter()
     mean, std, all_props = compute_mean_std(q=0.7, L=12, N=10**6, num_trials=50)
     elapsed = time.perf_counter() - t0
@@ -276,4 +195,3 @@ if __name__ == "__main__":
     print(f"  Std deviation    = {std:.8f}")
     print(f"  Theoretical      = {proportion_upgrade(12, 0.7):.8f}")
     print(f"  Wall time        = {elapsed:.2f} s  (multiprocessing)")
-    print(SEP)
